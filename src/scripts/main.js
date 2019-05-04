@@ -1,23 +1,24 @@
-import { PerspectiveCamera, GLTFLoader, Scene, WebGLRenderer } from 'three-full';
+import DeckRenderer from './core/DeckRenderer';
 
-const camera = new PerspectiveCamera(45, 1, 1, 1024);
-const renderer = new WebGLRenderer({ antialias: true });
-const scene = new Scene();
+function createAnimationLoop(callback) {
+	function update() {
+		requestAnimationFrame(update);
+		callback();
+	}
 
-camera.position.set(0, 0, -512);
-renderer.setSize(window.innerWidth, window.innerHeight);
+	requestAnimationFrame(update);
+}
 
-new GLTFLoader().load('/assets/models/landyachtz-drop-hammer.glb', (gltf) => {
-	console.log(gltf.scene);
+(async () => {
+	const renderer = new DeckRenderer();
 
-	gltf.scene.scale.set(1 / 1000, 1 / 1000, 1 / 1000);
+	renderer.setSize(window.innerWidth, window.innerHeight);
 
-	scene.add(gltf.scene);
-}, (xhr) => {
-	console.log('progress', xhr.loaded / xhr.total);
-}, (error) => {
-	console.log('error', error);
-});
+	await renderer.load();
 
-document.body.appendChild(renderer.domElement);
-renderer.render(scene, camera);
+	document.body.appendChild(renderer.element);
+
+	createAnimationLoop(() => {
+		renderer.render();
+	});
+})();
