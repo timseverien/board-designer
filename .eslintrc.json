@@ -11,6 +11,9 @@
     },
     "rules": {
       "indent": ["error", "tab"],
-      "no-tabs": "off"
+      "no-tabs": "off",
+      "no-param-reassign": ["error", {
+        "props": false
+      }]
     }
 }

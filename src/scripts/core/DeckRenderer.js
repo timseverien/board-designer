@@ -6,7 +6,11 @@ import {
 	Scene,
 	WebGLRenderer,
 	AmbientLight,
+	Mesh,
+	CanvasTexture,
 } from 'three-full';
+
+import loadImage from '../loaders/image';
 
 export default class DeckRenderer {
 	constructor() {
@@ -15,6 +19,8 @@ export default class DeckRenderer {
 		this.scene = new Scene();
 
 		this.camera.position.set(0, 0, 128);
+
+		this.textureImage = null;
 
 		this.renderer.setClearColor(0xcccccc);
 		this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -28,6 +34,8 @@ export default class DeckRenderer {
 	}
 
 	async load(onProgressCallback = null) {
+		const textureImage = await loadImage('/assets/models/landyachtz-drop-hammer-texture.png');
+
 		const ambient = new AmbientLight(0xc9eeff, 0.2);
 		this.scene.add(ambient);
 
@@ -35,9 +43,20 @@ export default class DeckRenderer {
 		sunlight.position.set(-0.125, 1, 0.25);
 		this.scene.add(sunlight);
 
-		this.model = await DeckRenderer.loadModel(onProgressCallback);
+		this.deckCanvas = DeckRenderer.createDeckCanvas(textureImage);
+		this.deckContext = this.deckCanvas.getContext('2d');
+		this.deckTexture = new CanvasTexture(this.deckCanvas);
+
+		this.model = await DeckRenderer.loadModel(this.deckTexture, onProgressCallback);
 		this.model.rotation.x = 0.5 * Math.PI;
+		this.model.rotation.z = Math.PI;
 		this.scene.add(this.model);
+	}
+
+	setDeckDesign() {
+		this.deckContext.fillStyle = `hsl(${360 * Math.random()}, 100%, 50%)`;
+		this.deckContext.fillRect(0, 0, Math.floor(this.deckCanvas.width / 3), this.deckCanvas.height);
+		this.deckTexture.needsUpdate = true;
 	}
 
 	setSize(width, height) {
@@ -49,12 +68,39 @@ export default class DeckRenderer {
 
 	render() {
 		this.renderer.render(this.scene, this.camera);
-		this.model.rotation.z = 2 * Math.PI * Date.now() / 12000;
+		this.model.rotation.y = 2 * Math.PI * Date.now() / 12000;
 	}
 
-	static loadModel(onProgressCallback = null) {
+	static createDeckCanvas(image) {
+		const canvas = document.createElement('canvas');
+		const context = canvas.getContext('2d');
+
+		canvas.height = image.naturalHeight;
+		canvas.width = image.naturalWidth;
+
+		context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+		return canvas;
+	}
+
+	static loadModel(texture, onProgressCallback = null) {
 		return new Promise((resolve, reject) => {
-			const onLoadCallback = gltf => resolve(gltf.scene.children[0]);
+			const onLoadCallback = (gltf) => {
+				const model = gltf.scene.children[0];
+
+				model.traverse((node) => {
+					if (!(node instanceof Mesh)) {
+						return;
+					}
+
+					const [material] = node.material;
+
+					node.material = material;
+					node.material.map = texture;
+				});
+
+				resolve(model);
+			};
 
 			new GLTFLoader()
 				.setDRACOLoader(new DRACOLoader())
