@@ -1,4 +1,5 @@
 import DeckRenderer from './core/DeckRenderer';
+import DotGraphicGenerator from './generators/DotGraphic';
 
 function createAnimationLoop(callback) {
 	function update() {
@@ -14,6 +15,7 @@ function createAnimationLoop(callback) {
 
 	const renderer = new DeckRenderer(deckContext);
 
+	renderer.setGraphicGenerator(new DotGraphicGenerator());
 	renderer.setSize(0.5 * window.innerWidth, window.innerHeight);
 
 	await renderer.load();
@@ -24,5 +26,7 @@ function createAnimationLoop(callback) {
 		renderer.render();
 	});
 
-	setInterval(() => renderer.setDeckDesign(), 1000);
+	setInterval(() => {
+		renderer.updateDeckDesign();
+	}, 1000);
 })();
