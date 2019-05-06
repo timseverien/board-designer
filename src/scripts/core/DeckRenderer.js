@@ -34,7 +34,7 @@ export default class DeckRenderer {
 	}
 
 	async load(onProgressCallback = null) {
-		const textureImage = await loadImage('/assets/models/landyachtz-drop-hammer-texture.png');
+		const textureImage = await loadImage('/assets/images/landyachtz-drop-hammer-texture.png');
 
 		const ambient = new AmbientLight(0xc9eeff, 0.2);
 		this.scene.add(ambient);
@@ -55,7 +55,7 @@ export default class DeckRenderer {
 
 	setDeckDesign() {
 		this.deckContext.fillStyle = `hsl(${360 * Math.random()}, 100%, 50%)`;
-		this.deckContext.fillRect(0, 0, Math.floor(this.deckCanvas.width / 3), this.deckCanvas.height);
+		this.deckContext.fillRect(0, 0, 479, this.deckCanvas.height);
 		this.deckTexture.needsUpdate = true;
 	}
 
@@ -93,10 +93,8 @@ export default class DeckRenderer {
 						return;
 					}
 
-					const [material] = node.material;
-
-					node.material = material;
 					node.material.map = texture;
+					node.material.needsUpdate = true;
 				});
 
 				resolve(model);
