@@ -14,7 +14,7 @@ import loadImage from '../loaders/image';
 
 export default class DeckRenderer {
 	constructor() {
-		this.camera = new PerspectiveCamera(60, 1, 1, 1024);
+		this.camera = new PerspectiveCamera(45, 1, 1, 1024);
 		this.renderer = new WebGLRenderer({ antialias: true });
 		this.scene = new Scene();
 
@@ -36,11 +36,11 @@ export default class DeckRenderer {
 	async load(onProgressCallback = null) {
 		const textureImage = await loadImage('/assets/images/landyachtz-drop-hammer-texture.png');
 
-		const ambient = new AmbientLight(0xc9eeff, 0.2);
+		const ambient = new AmbientLight(0xc9eeff, 0.25);
 		this.scene.add(ambient);
 
-		const sunlight = new DirectionalLight(0xfff2ed, 0.8);
-		sunlight.position.set(-0.125, 1, 0.25);
+		const sunlight = new DirectionalLight(0xfff2ed, 1);
+		sunlight.position.set(-0.25, -1, 0.5);
 		this.scene.add(sunlight);
 
 		this.deckCanvas = DeckRenderer.createDeckCanvas(textureImage);
@@ -49,13 +49,15 @@ export default class DeckRenderer {
 
 		this.model = await DeckRenderer.loadModel(this.deckTexture, onProgressCallback);
 		this.model.rotation.x = 0.5 * Math.PI;
-		this.model.rotation.z = Math.PI;
+		this.model.rotation.z = 0.95 * Math.PI;
 		this.scene.add(this.model);
 	}
 
 	setDeckDesign() {
+		const width = 447; // TODO: not hardcode the deck width on texture
+
 		this.deckContext.fillStyle = `hsl(${360 * Math.random()}, 100%, 50%)`;
-		this.deckContext.fillRect(0, 0, 479, this.deckCanvas.height);
+		this.deckContext.fillRect(0, 0, width, this.deckCanvas.height);
 		this.deckTexture.needsUpdate = true;
 	}
 
@@ -68,7 +70,6 @@ export default class DeckRenderer {
 
 	render() {
 		this.renderer.render(this.scene, this.camera);
-		this.model.rotation.y = 2 * Math.PI * Date.now() / 12000;
 	}
 
 	static createDeckCanvas(image) {
