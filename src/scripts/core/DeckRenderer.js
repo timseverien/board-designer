@@ -7,9 +7,11 @@ import {
 	WebGLRenderer,
 	Mesh,
 	CanvasTexture,
+	Box3,
+	Vector3,
 } from 'three-full';
 
-import loadImage from '../loaders/image';
+import loadModel from '../loaders/model';
 
 export default class DeckRenderer {
 	constructor() {
@@ -32,28 +34,36 @@ export default class DeckRenderer {
 	}
 
 	async load(onProgressCallback = null) {
-		const textureImage = await loadImage('/assets/images/landyachtz-drop-hammer-texture.png');
+		// const textureImage = await loadImage('/assets/images/landyachtz-drop-hammer-texture.png');
 
 		const sunlight = new DirectionalLight(0xfff2ed, 2);
 		sunlight.position.set(-0.25, -1, 0.5);
 		this.scene.add(sunlight);
 
-		this.deckCanvas = DeckRenderer.createDeckCanvas(textureImage);
+		const { data, model, texture } = await loadModel('landyachtz-drop-hammer', onProgressCallback);
+		const aspect = data.width / data.height;
+
+		this.deckCanvas = DeckRenderer.createDeckCanvas(texture);
 		this.deckContext = this.deckCanvas.getContext('2d');
 		this.deckTexture = new CanvasTexture(this.deckCanvas);
 
-		// TODO: not hardcode the graphic width on texture
-		this.graphicCanvas = DeckRenderer.createCanvas(447, textureImage.naturalHeight);
-		this.graphicContext = this.graphicCanvas.getContext('2d');
+		DeckRenderer.modelSetTexture(model, this.deckTexture);
 
-		this.model = await DeckRenderer.loadModel(this.deckTexture, onProgressCallback);
+		this.model = model;
 		this.model.rotation.x = 0.5 * Math.PI;
 		this.model.rotation.z = 0.95 * Math.PI;
 		this.scene.add(this.model);
+
+		this.graphicCanvas = DeckRenderer.createCanvas(
+			texture.naturalHeight * aspect,
+			texture.naturalHeight,
+		);
+
+		this.graphicContext = this.graphicCanvas.getContext('2d');
 	}
 
 	render() {
-		this.model.rotation.z = Math.PI + Math.PI * Math.sin(Date.now() / 5000) / 16;
+		this.model.rotation.z = Math.PI + Math.PI * Math.sin(Date.now() / 1000) / 8;
 		this.renderer.render(this.scene, this.camera);
 	}
 
@@ -69,8 +79,14 @@ export default class DeckRenderer {
 	}
 
 	updateDeckDesign() {
+		const { height } = this.deckCanvas;
+		// TODO: not hardcode the graphic width on texture
+		// TODO: Use model data
+		const width = this.deckCanvas.height / 3.6571428571428571428571428571429;
+
 		this.graphicGenerator.generate(this.graphicContext);
-		this.deckContext.drawImage(this.graphicCanvas, 0, 0);
+
+		this.deckContext.drawImage(this.graphicCanvas, 0, 0, width, height);
 		this.deckTexture.needsUpdate = true;
 	}
 
@@ -92,26 +108,18 @@ export default class DeckRenderer {
 		return canvas;
 	}
 
-	static loadModel(texture, onProgressCallback = null) {
-		return new Promise((resolve, reject) => {
-			const onLoadCallback = (gltf) => {
-				const model = gltf.scene.children[0];
+	static loadModel(modelName) {
 
-				model.traverse((node) => {
-					if (!(node instanceof Mesh)) {
-						return;
-					}
+	}
 
-					node.material.map = texture;
-					node.material.needsUpdate = true;
-				});
+	static modelSetTexture(model, texture) {
+		model.traverse((node) => {
+			if (!(node instanceof Mesh)) {
+				return;
+			}
 
-				resolve(model);
-			};
-
-			new GLTFLoader()
-				.setDRACOLoader(new DRACOLoader())
-				.load('/assets/models/landyachtz-drop-hammer.glb', onLoadCallback, onProgressCallback, reject);
+			node.material.map = texture;
+			node.material.needsUpdate = true;
 		});
 	}
 }

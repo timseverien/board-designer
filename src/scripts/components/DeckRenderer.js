@@ -24,5 +24,7 @@ export default class DeckRendererComponent {
 		await this.renderer.load();
 
 		createAnimationLoop(() => this.renderer.render());
+
+		setInterval(() => this.renderer.updateDeckDesign(), 1000);
 	}
 }
