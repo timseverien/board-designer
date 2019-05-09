@@ -5,7 +5,6 @@ import {
 	PerspectiveCamera,
 	Scene,
 	WebGLRenderer,
-	AmbientLight,
 	Mesh,
 	CanvasTexture,
 } from 'three-full';

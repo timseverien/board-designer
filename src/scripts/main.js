@@ -1,32 +1,42 @@
-import DeckRenderer from './core/DeckRenderer';
-import DotGraphicGenerator from './generators/DotGraphic';
+import * as conditioner from 'conditioner-core/conditioner-core.esm';
+import componentMap from './components';
 
-function createAnimationLoop(callback) {
-	function update() {
-		requestAnimationFrame(update);
-		callback();
-	}
+conditioner.addPlugin({
+	moduleGetName(element) {
+		return element.dataset.component;
+	},
 
-	requestAnimationFrame(update);
-}
+	moduleImport(name) {
+		if (!componentMap.has(name)) {
+			throw new Error(`Component "${name}" does not exist`);
+		}
 
-(async () => {
-	const deckContext = document.createElement('canvas').getContext('2d');
+		return Promise.resolve(componentMap.get(name));
+	},
 
-	const renderer = new DeckRenderer(deckContext);
+	moduleGetConstructor(Component) {
+		return (...args) => {
+			const instance = Reflect.construct(Component, args);
 
-	renderer.setGraphicGenerator(new DotGraphicGenerator());
-	renderer.setSize(0.5 * window.innerWidth, window.innerHeight);
+			instance.create();
 
-	await renderer.load();
+			return instance;
+		};
+	},
 
-	document.body.appendChild(renderer.element);
+	moduleGetDestructor(instance) {
+		return () => {
+			if (!Reflect.has(instance, 'destroy') || typeof Reflect.get(instance, 'destroy') !== 'function') {
+				return;
+			}
 
-	createAnimationLoop(() => {
-		renderer.render();
-	});
+			instance.destroy();
+		};
+	},
 
-	setInterval(() => {
-		renderer.updateDeckDesign();
-	}, 1000);
-})();
+	moduleSelector(context) {
+		return context.querySelectorAll('[data-component]');
+	},
+});
+
+conditioner.hydrate(document.documentElement);

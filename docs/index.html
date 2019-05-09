@@ -15,11 +15,21 @@
 		canvas {
 			display: block;
 		}
+
+		.app {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+		}
 	</style>
 </head>
 <body>
 
-<script src="/assets/scripts/main.js"></script>
+	<main role="main" class="app">
+		<div data-component="DeckRenderer"></div>
+		<div></div>
+	</main>
+
+	<script src="/assets/scripts/main.js"></script>
 
 </body>
 </html>

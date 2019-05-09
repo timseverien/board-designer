@@ -12,6 +12,7 @@
     "test:scripts": "eslint **/*.js"
   },
   "dependencies": {
+    "conditioner-core": "^2.3.1",
     "three-full": "^17.1.0"
   },
   "devDependencies": {
