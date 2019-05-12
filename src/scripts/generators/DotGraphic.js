@@ -1,4 +1,5 @@
-const lerp = (a, b, t) => a + t * (b - a);
+import colors from 'nice-color-palettes';
+import MathUtils from '../core/Math';
 
 export default class DotGraphicGenerator {
 	constructor() {
@@ -10,17 +11,18 @@ export default class DotGraphicGenerator {
 	// eslint-disable-next-line class-methods-use-this
 	generate(context) {
 		const { height, width } = context.canvas;
-		const size = Math.min(width, height);
+		const size = 2 * Math.min(width, height);
+		const palette = colors[Math.floor(colors.length * Math.random())];
 
-		context.fillStyle = this.backgroundColor;
+		context.fillStyle = palette.pop();
 		context.fillRect(0, 0, width, height);
 
 		for (let i = 0; i < 1024; i++) {
-			const x = lerp(0, width, Math.random());
-			const y = lerp(0, height, Math.random());
-			const radius = size * lerp(this.dotSizeMin, this.dotSizeMax, Math.random());
+			const x = MathUtils.lerp(0, width, Math.random());
+			const y = MathUtils.lerp(0, height, Math.random());
+			const radius = size * MathUtils.lerp(this.dotSizeMin, this.dotSizeMax, Math.random());
 
-			context.fillStyle = `hsl(${360 * Math.random()}, 100%, 50%)`;
+			context.fillStyle = palette[Math.floor(palette.length * Math.random())];
 
 			context.beginPath();
 			context.arc(x, y, radius, 0, 2 * Math.PI);
