@@ -18,10 +18,11 @@ export default class DeckRendererComponent {
 
 	async create() {
 		this.renderer.setGraphicGenerator(new DotGraphicGenerator());
-		this.renderer.setSize(0.5 * window.innerWidth, window.innerHeight);
-		this.element.appendChild(this.renderer.element);
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 
 		await this.renderer.load();
+
+		this.element.appendChild(this.renderer.element);
 
 		createAnimationLoop(() => this.renderer.render());
 

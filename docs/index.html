@@ -20,12 +20,17 @@
 			display: grid;
 			grid-template-columns: 1fr 1fr;
 		}
+
+		.app__renderer {
+			/* background-image: linear-gradient(0deg, #000822, #000); */
+			background-image: radial-gradient(circle closest-corner, #fff, #ccc);
+		}
 	</style>
 </head>
 <body>
 
 	<main role="main" class="app">
-		<div data-component="DeckRenderer"></div>
+		<div class="app__renderer" data-component="DeckRenderer"></div>
 		<div></div>
 	</main>
 
