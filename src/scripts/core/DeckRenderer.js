@@ -1,23 +1,23 @@
 import {
-	DRACOLoader,
-	GLTFLoader,
 	DirectionalLight,
 	PerspectiveCamera,
 	Scene,
 	WebGLRenderer,
 	Mesh,
-	CanvasTexture,
-	Box3,
-	Vector3,
+	Vector2,
 } from 'three-full';
 
 import loadModel from '../loaders/model';
+import CanvasFactory from '../factories/canvas';
+import DeckTextureModel from '../models/DeckTexture';
 
 export default class DeckRenderer {
 	constructor() {
 		this.camera = new PerspectiveCamera(45, 1, 1, 1024);
 		this.deckTexture = null;
+		this.graphicContext = null;
 		this.graphicGenerator = null;
+		this.model = null;
 		this.renderer = new WebGLRenderer({ antialias: true });
 		this.scene = new Scene();
 
@@ -34,32 +34,26 @@ export default class DeckRenderer {
 	}
 
 	async load(onProgressCallback = null) {
-		// const textureImage = await loadImage('/assets/images/landyachtz-drop-hammer-texture.png');
+		const { model, region, texture } = await loadModel('landyachtz-drop-hammer', onProgressCallback);
+		const regionSize = region.getSize(new Vector2());
+		const aspect = regionSize.x / regionSize.y;
 
 		const sunlight = new DirectionalLight(0xfff2ed, 2);
 		sunlight.position.set(-0.25, -1, 0.5);
 		this.scene.add(sunlight);
 
-		const { data, model, texture } = await loadModel('landyachtz-drop-hammer', onProgressCallback);
-		const aspect = data.width / data.height;
+		this.deckTexture = new DeckTextureModel(texture, region);
 
-		this.deckCanvas = DeckRenderer.createDeckCanvas(texture);
-		this.deckContext = this.deckCanvas.getContext('2d');
-		this.deckTexture = new CanvasTexture(this.deckCanvas);
-
-		DeckRenderer.modelSetTexture(model, this.deckTexture);
+		DeckRenderer.modelSetTexture(model, this.deckTexture.texture);
 
 		this.model = model;
 		this.model.rotation.x = 0.5 * Math.PI;
 		this.model.rotation.z = 0.95 * Math.PI;
 		this.scene.add(this.model);
 
-		this.graphicCanvas = DeckRenderer.createCanvas(
-			texture.naturalHeight * aspect,
-			texture.naturalHeight,
-		);
-
-		this.graphicContext = this.graphicCanvas.getContext('2d');
+		this.graphicContext = CanvasFactory
+			.create(texture.naturalHeight * aspect, texture.naturalHeight)
+			.getContext('2d');
 	}
 
 	render() {
@@ -79,37 +73,8 @@ export default class DeckRenderer {
 	}
 
 	updateDeckDesign() {
-		const { height } = this.deckCanvas;
-		// TODO: not hardcode the graphic width on texture
-		// TODO: Use model data
-		const width = this.deckCanvas.height / 3.6571428571428571428571428571429;
-
 		this.graphicGenerator.generate(this.graphicContext);
-
-		this.deckContext.drawImage(this.graphicCanvas, 0, 0, width, height);
-		this.deckTexture.needsUpdate = true;
-	}
-
-	static createCanvas(width, height) {
-		const canvas = document.createElement('canvas');
-
-		canvas.height = height;
-		canvas.width = width;
-
-		return canvas;
-	}
-
-	static createDeckCanvas(image) {
-		const canvas = DeckRenderer.createCanvas(image.naturalWidth, image.naturalHeight);
-		const context = canvas.getContext('2d');
-
-		context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-		return canvas;
-	}
-
-	static loadModel(modelName) {
-
+		this.deckTexture.drawGraphicImage(this.graphicContext.canvas);
 	}
 
 	static modelSetTexture(model, texture) {

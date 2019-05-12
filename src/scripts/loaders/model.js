@@ -1,6 +1,8 @@
 import {
 	DRACOLoader,
 	GLTFLoader,
+	Box2,
+	Vector2,
 } from 'three-full';
 
 import loadImage from './image';
@@ -20,8 +22,12 @@ function loadModel(modelName, onProgressCallback = null) {
 
 async function loadModelData(modelName) {
 	const response = await fetch(`${PATH_MODEL}/${modelName}.json`);
+	const data = await response.json();
 
-	return response.json();
+	return new Box2(
+		new Vector2(data.x, data.y),
+		new Vector2(data.x + data.width, data.y + data.height),
+	);
 }
 
 function loadTexture(modelName) {
@@ -30,14 +36,14 @@ function loadTexture(modelName) {
 
 export default async (modelName, onProgressCallback = null) => {
 	const [
-		data,
 		model,
+		region,
 		texture,
 	] = await Promise.all([
-		loadModelData(modelName),
 		loadModel(modelName, onProgressCallback),
+		loadModelData(modelName),
 		loadTexture(modelName),
 	]);
 
-	return { data, model, texture };
+	return { model, region, texture };
 };

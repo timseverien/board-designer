@@ -1,6 +1,10 @@
 import * as conditioner from 'conditioner-core/conditioner-core.esm';
 import componentMap from './components';
 
+import CanvasFactory from './factories/canvas';
+
+CanvasFactory.setPixelRatio(window.devicePixelRatio);
+
 conditioner.addPlugin({
 	moduleGetName(element) {
 		return element.dataset.component;
