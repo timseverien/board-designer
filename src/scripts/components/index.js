@@ -1,5 +1,7 @@
-import DeckRenderer from './DeckRenderer';
+import DeckRendererComponent from './DeckRenderer';
+import DesignSettingsComponent from './DesignSettings';
 
 export default new Map([
-	['DeckRenderer', DeckRenderer],
+	['DeckRenderer', DeckRendererComponent],
+	['DesignSettings', DesignSettingsComponent],
 ]);

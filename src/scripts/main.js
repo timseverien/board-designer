@@ -43,4 +43,6 @@ conditioner.addPlugin({
 	},
 });
 
-conditioner.hydrate(document.documentElement);
+const modules = conditioner.hydrate(document.documentElement);
+
+window.addEventListener('beforeunload', () => modules.forEach(m => m.unmount()));

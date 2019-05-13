@@ -5,11 +5,10 @@ import {
 	DirectionalLight,
 	HemisphereLight,
 	Mesh,
-	MeshBasicMaterial,
 	MeshStandardMaterial,
 	Object3D,
 	PerspectiveCamera,
-	ReinhardToneMapping,
+	// ReinhardToneMapping,
 	Scene,
 	Vector2,
 	Vector3,
@@ -51,6 +50,23 @@ export default class DeckRenderer {
 
 	get element() {
 		return this.renderer.domElement;
+	}
+
+	destroy() {
+		this.renderer.dispose();
+
+		this.scene.children.forEach((child) => {
+			if (child instanceof Mesh) {
+				child.geometry.dispose();
+				child.material.dispose();
+			}
+
+			this.scene.remove(child);
+		});
+
+		this.camera = null;
+		this.scene = null;
+		this.renderer = null;
 	}
 
 	async load(onProgressCallback = null) {
